@@ -106,12 +106,83 @@ glimpse(venue_data)
   *the venues from the remaining results pages?*
 
 
+``` {r Excercise_4, warning=FALSE}
+total_pages <- APIcontent$page$totalPages-1
+total_results <-APIcontent$page$totalElements-20
 
+venue_data <- tibble(
+  name  = character(total_results),
+  city   = character(total_results),
+  postalCode = character(total_results),
+  address   = character(total_results),
+  url = character(total_results),
+  longitude = character(total_results),
+  latitude = character(total_results),
+)
 
+for (p in 1:total_pages){
 
+  APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
+                    query = list(apikey = key,
+                               countryCode = "DE",
+                               page = p)) %>%
+                content()
+  
+  venues <- APIcontent$`_embedded`$venues
+  
+  n <- length(APIcontent$`_embedded`$venues)
+  
+  for (i in 1:n){
+    
+    if (is.null(venues[[i]]$name)){
+      venue_data[(p-1)*20+i,1] <-"NA"
+    } else {
+      venue_data[(p-1)*20+i,1] <- venues[[i]]$name
+    }
+    
+    
+    if (is.null(venues[[i]]$city)){
+      venue_data[(p-1)*20+i,2] <-"NA"
+    } else {
+      venue_data[(p-1)*20+i,2] <- venues[[i]]$city
+    }
+    
+    if (is.null(venues[[i]]$postalCode)){
+      venue_data[(p-1)*20+i,3] <-"NA"
+    } else {
+      venue_data[(p-1)*20+i,3] <- venues[[i]]$postalCode
+    }
+    
+    if (is.null(venues[[i]]$address$line1)){
+      venue_data[(p-1)*20+i,4] <-"NA"
+    } else {
+      venue_data[(p-1)*20+i,4] <- venues[[i]]$address$line1
+    }
+    
+    
+    if (is.null(venues[[i]]$url)){
+      venue_data[(p-1)*20+i,5] <-"NA"
+    } else {
+      venue_data[(p-1)*20+i,5] <- venues[[i]]$url
+    }
+    
+    if (is.null(venues[[i]]$location$longitude)){
+      venue_data[(p-1)*20+i,6] <-"NA"
+    } else {
+      venue_data[(p-1)*20+i,6] <- venues[[i]]$location$longitude
+    }
+    
+    if (is.null(venues[[i]]$location$latitude)){
+      venue_data[(p-1)*20+i,7] <- "NA"
+    } else {
+      venue_data[(p-1)*20+i,7] <- venues[[i]]$location$latitude
+    }
+  }
+  
+  Sys.sleep(1)
+}
 
-
-
+```
 
 
 
