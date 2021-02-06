@@ -20,10 +20,17 @@ load the packages that are needed for the assignment.
 ```{r general, message=FALSE, warning=FALSE,results = 'hide'}
 rm(list = ls())
 
-#if (!require("")) install.packages("")
+if (!require("jsonlite")) install.packages("jsonlite")
+if (!require("httr")) install.packages("httr")
+if (!require("rlist")) install.packages("rlist")
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("naniar")) install.packages("naniar")
 
-
-#library()
+library(jsonlite)
+library(httr)
+library(rlist)
+library(tidyverse)
+library(naniar)
 setwd("C:/Users/Kai Brehm/Desktop/Uni/3. Semester/DSPM/Excercises/DSPM_Assignment_V")
 
 ```
@@ -31,11 +38,73 @@ setwd("C:/Users/Kai Brehm/Desktop/Uni/3. Semester/DSPM/Excercises/DSPM_Assignmen
 The GitHub repository for this assignment is located at: https://github.com/KaiBrehm/DSPM_Assignment_V.git
 
 ### Exercise 2: Getting to know the API
-``` {r Excercise1_1, warning=FALSE}
+``` {r Excercise_2, warning=FALSE}
 # load the API key:
 source("api_key.R")
 
 ```
+
+### Exercise 3: Interacting with the API - the basics
+* *Perform a first GET request, that searches for event venues in Germany*
+  *(countryCode = "DE"). Extract the content from the response object and*
+  *inspect the resulting list. Describe what you can see*
+  
+``` {r Excercise_3_1, warning=FALSE}
+APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues.json?", 
+                  query = list(apikey = key,
+                               countryCode = "DE" )) %>% content()
+```
+The resulting list object contains the information for the german venues in the
+first object``_embedded``. There, each element of the list ``venues``, contains the 
+variables for each venue. 
+
+
+* *Extract the name, the city, the postalCode and address, as well as the url and *
+  *the longitude and latitude of the venues to a data frame.*
+``` {r Excercise_3_2, warning=FALSE}
+
+#create an empty datframe:
+n <- length(APIcontent$`_embedded`$venues)
+venue_data <- tibble(
+  name  = character(n),
+  city   = character(n),
+  postalCode = character(n),
+  address   = character(n),
+  url = character(n),
+  longitude = character(n),
+  latitude = character(n),
+ )
+#extract the lists containing the venue information
+venues <- APIcontent$`_embedded`$venues
+
+# loop over the lists to extract the respective variables for each venue
+for (i in 1:n){
+  venue_data[i,1] <- venues[[i]]$name
+  venue_data[i,2] <- venues[[i]]$city
+  venue_data[i,3] <- venues[[i]]$postalCode
+  venue_data[i,4] <- venues[[i]]$address
+  venue_data[i,5] <- venues[[i]]$url
+  if (is.null(venues[[i]]$location$longitude)){
+    venue_data[i,6] <-"NA"
+  } else {
+    venue_data[i,6] <- venues[[i]]$location$longitude
+  }
+
+  if (is.null(venues[[i]]$location$latitude)){
+    venue_data[i,7] <- "NA"
+  } else {
+    venue_data[i,7] <- venues[[i]]$location$latitude
+  }
+}
+
+glimpse(venue_data)
+```
+
+
+### Exercise 4: Interacting with the API - the basics
+* *Check the API documentation under the section Venue Search. How can you request*
+  *the venues from the remaining results pages?*
+
 
 
 
