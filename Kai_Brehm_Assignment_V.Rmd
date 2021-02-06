@@ -9,3 +9,41 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+I hereby assure that my submission is in line with the *Code of Conduct* outlined
+on the lecture slides.
+
+### General setup
+
+Before I start the project, I clear my workspace and install (if necessary) and 
+load the packages that are needed for the assignment.
+
+```{r general, message=FALSE, warning=FALSE,results = 'hide'}
+rm(list = ls())
+
+#if (!require("")) install.packages("")
+
+
+#library()
+setwd("C:/Users/Kai Brehm/Desktop/Uni/3. Semester/DSPM/Excercises/DSPM_Assignment_V")
+
+```
+### Exercise 1: Setting up a new GitHub repository
+The GitHub repository for this assignment is located at: https://github.com/KaiBrehm/DSPM_Assignment_V.git
+
+### Exercise 2: Getting to know the API
+``` {r Excercise1_1, warning=FALSE}
+# load the API key:
+source("api_key.R")
+
+```
+
+
+
+
+
+
+
+
+
+
+
