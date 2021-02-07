@@ -161,52 +161,53 @@ for (p in 0:total_pages){
   for (i in 1:n){
     
     if (is.null(venues[[i]]$name)){
-      venue_data[(p-1)*20+i,1] <-"NA"
+      venue_data[(p)*20+i,1] <-"NA"
     } else {
-      venue_data[(p-1)*20+i,1] <- venues[[i]]$name
+      venue_data[(p)*20+i,1] <- venues[[i]]$name
     }
     
     
     if (is.null(venues[[i]]$city)){
-      venue_data[(p-1)*20+i,2] <-"NA"
+      venue_data[(p)*20+i,2] <-"NA"
     } else {
-      venue_data[(p-1)*20+i,2] <- venues[[i]]$city
+      venue_data[(p)*20+i,2] <- venues[[i]]$city
     }
     
     if (is.null(venues[[i]]$postalCode)){
-      venue_data[(p-1)*20+i,3] <-"NA"
+      venue_data[(p)*20+i,3] <-"NA"
     } else {
-      venue_data[(p-1)*20+i,3] <- venues[[i]]$postalCode
+      venue_data[(p)*20+i,3] <- venues[[i]]$postalCode
     }
     
     if (is.null(venues[[i]]$address$line1)){
-      venue_data[(p-1)*20+i,4] <-"NA"
+      venue_data[(p)*20+i,4] <-"NA"
     } else {
-      venue_data[(p-1)*20+i,4] <- venues[[i]]$address$line1
+      venue_data[(p)*20+i,4] <- venues[[i]]$address$line1
     }
     
     
     if (is.null(venues[[i]]$url)){
-      venue_data[(p-1)*20+i,5] <-"NA"
+      venue_data[(p)*20+i,5] <-"NA"
     } else {
-      venue_data[(p-1)*20+i,5] <- venues[[i]]$url
+      venue_data[(p)*20+i,5] <- venues[[i]]$url
     }
     
     if (is.null(venues[[i]]$location$longitude)){
-      venue_data[(p-1)*20+i,6] <-"NA"
+      venue_data[(p)*20+i,6] <-"NA"
     } else {
-      venue_data[(p-1)*20+i,6] <- venues[[i]]$location$longitude
+      venue_data[(p)*20+i,6] <- venues[[i]]$location$longitude
     }
     
     if (is.null(venues[[i]]$location$latitude)){
-      venue_data[(p-1)*20+i,7] <- "NA"
+      venue_data[(p)*20+i,7] <- "NA"
     } else {
-      venue_data[(p-1)*20+i,7] <- venues[[i]]$location$latitude
+      venue_data[(p)*20+i,7] <- venues[[i]]$location$latitude
     }
   }
   
   Sys.sleep(0.5)
 }
+
 
 venue_data$longitude <- as.numeric(venue_data$longitude)
 venue_data$latitude <- as.numeric(venue_data$latitude)
