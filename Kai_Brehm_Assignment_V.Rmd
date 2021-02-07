@@ -101,7 +101,7 @@ glimpse(venue_data)
 ```
 
 
-### Exercise 4: Interacting with the API - the basics
+### Exercise 4: Interacting with the API - advanced
 * *Check the API documentation under the section Venue Search. How can you request*
   *the venues from the remaining results pages?*
 
@@ -179,11 +179,32 @@ for (p in 1:total_pages){
     }
   }
   
-  Sys.sleep(1)
+  Sys.sleep(0.5)
 }
 
+venue_data$longitude <- as.numeric(venue_data$longitude)
+venue_data$latitude <- as.numeric(venue_data$latitude)
+
+glimpse(venue_data)
 ```
 
+### Exercise 5: Visualizing the extracted data
 
 
+``` {r Excercise_5, warning=FALSE}
+venue_data$longitude[venue_data$longitude<5.866944 | venue_data$longitude > 15.043611] <- NA
+venue_data$latitude[venue_data$latitude<47.271679 | venue_data$latitude > 55.0846] <- NA
+
+
+venue_data %>% 
+      ggplot(aes(longitude,latitude)) +
+        geom_polygon(
+          aes(x = long, y = lat, group = group), data = map_data("world", region = "Germany"),
+        fill = "grey90",color = "black") +
+        geom_point()+
+        theme_void() + coord_quickmap() +
+        labs(title = "Event locations across Germany", caption = "Source: ticketmaster.com") +
+        theme(title = element_text(size=8, face='bold'),
+             plot.caption = element_text(face = "italic"))
+```
 
