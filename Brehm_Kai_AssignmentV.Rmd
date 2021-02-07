@@ -1,6 +1,6 @@
 ---
-title: "Kai_Brehm_Assignment_V"
-author: "Kai Brehm"
+title: "Brehm_Kai_AssignmentV"
+author: "Submitted by Kai Brehm (Student ID: 3934377)"
 date: "6 Februar 2021"
 output: html_document
 ---
@@ -25,7 +25,10 @@ if (!require("httr")) install.packages("httr")
 if (!require("rlist")) install.packages("rlist")
 if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("naniar")) install.packages("naniar")
-
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("dplyr")) install.packages("dplyr")
+library(ggplot2)
+library(dplyr)
 library(jsonlite)
 library(httr)
 library(rlist)
@@ -38,34 +41,42 @@ setwd("C:/Users/Kai Brehm/Desktop/Uni/3. Semester/DSPM/Excercises/DSPM_Assignmen
 The GitHub repository for this assignment is located at: https://github.com/KaiBrehm/DSPM_Assignment_V.git
 
 ### Exercise 2: Getting to know the API
+* *Visit the documentation, familiarize with the features, look at rate limits.*
+
+The documentation indicates that 5000 API calls per day and 5 requests per second 
+are allowed. That is the reason why I put ``Sys.sleep(0.5)`` after every request 
+to be on the safe side. I store the key for the API in a separate file ``api_key.R``.
 ``` {r Excercise_2, warning=FALSE}
 # load the API key:
 source("api_key.R")
-
 ```
 
 ### Exercise 3: Interacting with the API - the basics
 * *Perform a first GET request, that searches for event venues in Germany*
   *(countryCode = "DE"). Extract the content from the response object and*
-  *inspect the resulting list. Describe what you can see*
+  *inspect the resulting list. Describe what you can see.*
   
 ``` {r Excercise_3_1, warning=FALSE}
+#perform a GET request to the api, filtering for Germany and store the content:
 APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                   query = list(apikey = key,
                                countryCode = "DE")) %>%
               content()
 ```
+
 The resulting list object contains the information for the german venues in the
 first object``_embedded``. There, each element of the list ``venues``, contains the 
-variables for each venue. 
-
+variables for each venue. The list ``page`` contains information on the number of 
+results per page, the total number of results and the total number of pages. 
 
 * *Extract the name, the city, the postalCode and address, as well as the url and *
   *the longitude and latitude of the venues to a data frame.*
 ``` {r Excercise_3_2, warning=FALSE}
 
-#create an empty datframe:
+#obtain n as the number of observations: 
 n <- length(APIcontent$`_embedded`$venues)
+
+#create an empty datframe for n observations per variable:
 venue_data <- tibble(
   name  = character(n),
   city   = character(n),
@@ -75,10 +86,12 @@ venue_data <- tibble(
   longitude = character(n),
   latitude = character(n),
  )
-#extract the lists containing the venue information
+#extract the lists containing the venue information:
 venues <- APIcontent$`_embedded`$venues
 
-# loop over the lists to extract the respective variables for each venue
+# loop over the lists to extract the respective variables for each observation and
+  #store them in the initialized dataframe "venue_data". Everytime a NULL object
+  #is returned due to missing variables, I pace "NA" into the dataframe.
 for (i in 1:n) {
   
   if (is.null(venues[[i]]$name)) {venue_data[i, 1] <- "NA"} 
@@ -102,19 +115,31 @@ for (i in 1:n) {
   if (is.null(venues[[i]]$location$latitude)) {venue_data[i, 7] <- "NA"} 
   else {venue_data[i, 7] <- venues[[i]]$location$latitude}
 }
+#look at the resulting dataframe:
 glimpse(venue_data)
 ```
 
-
 ### Exercise 4: Interacting with the API - advanced
-* *Check the API documentation under the section Venue Search. How can you request*
-  *the venues from the remaining results pages?*
-
+* *Write a for loop that iterates through the results pages and performs a GET* 
+  *request for all venues in Germany. After each iteration, extract the seven*
+  *variables name, city, postalCode, address, url,longitude, and latitude. Join*
+  *the information in one large data frame*
+  
+In order to loop over all pages, I first extract the total number of pages. Since
+the number of the first page is 0, the index number of the last page is always one
+index number lower than the total number of pages. E.g. if the total number of pages
+is 238, the loop has to go from 0 to 237. Hence, I substract 1 from the total number
+of pages. In addition, I extract the total number of observations, in order to
+initialize a datframe with the right amount of observations for the variables.
 
 ``` {r Excercise_4, warning=FALSE}
+# obtain the number of pages (substract 1 as pointed out above)
 total_pages <- APIcontent$page$totalPages-1
+
+#obtain the number of observations available
 total_results <-APIcontent$page$totalElements
 
+#initialize a dataframe with  observations equal to "total_results"
 venue_data <- tibble(
   name  = character(total_results),
   city   = character(total_results),
@@ -125,18 +150,27 @@ venue_data <- tibble(
   latitude = character(total_results),
 )
 
+# loop over the lists to extract the respective variables for each observation and
+  #store them in the initialized dataframe "venue_data". Everytime a NULL object
+  #is returned due to missing variables, I pace "NA" into the dataframe.
+  #The index of the first page is 0 and the index of the last page is "total_pages":
 for (p in 0:total_pages) {
-
+  #perform a GET request to the api, filtering for Germany and store the content:
   APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                     query = list(apikey = key,
                                  countryCode = "DE",
                                  page = p)) %>%
                 content()
   
+  #extract the lists containing the venue information:
   venues <- APIcontent$`_embedded`$venues
-
+  
+  #store the number of observations of the list for the respective page:
   n <- length(APIcontent$`_embedded`$venues)
   
+  # loop over the lists to extract the respective variables for each observation and
+  #store them in the initialized dataframe "venue_data". Everytime a NULL object
+  #is returned due to missing variables, I pace "NA" into the dataframe:
   for (i in 1:n) {
     
     if (is.null(venues[[i]]$name)) {venue_data[(p)*20 + i,1] <- "NA"} 
@@ -164,7 +198,8 @@ for (p in 0:total_pages) {
   Sys.sleep(0.5)
 }
 
-venue_data$longitude <- as.numeric(venue_data$longitude)
+# convert the coordinates to numeric:
+venue_data$longitude <- as.numeric(venue_data$longitude) 
 venue_data$latitude <- as.numeric(venue_data$latitude)
 
 glimpse(venue_data)
@@ -172,19 +207,21 @@ glimpse(venue_data)
 
 ### Exercise 5: Visualizing the extracted data
 * *Produce a map of Germany with points indicating the event venues.*
+The coordinate limits for German borders are obtained from: 
+https://en.wikipedia.org/wiki/Geography_of_Germany#Extreme_points
 
 ``` {r Excercise_5, warning=FALSE}
 # only include coordinates, which are really within German borders:
 venue_data$longitude[venue_data$longitude<5.866944 | venue_data$longitude > 15.043611] <- NA
 venue_data$latitude[venue_data$latitude<47.271679 | venue_data$latitude > 55.0846] <- NA
 
-
+# create a plot for Germany
 venue_data %>% 
-      ggplot(aes(longitude,latitude)) +
-        geom_polygon(
+      ggplot(aes(longitude,latitude)) +    #aesthetics for the coordinates
+        geom_polygon(                      #map in theshape of Germany
           aes(x = long, y = lat, group = group), data = map_data("world", region = "Germany"),
         fill = "grey90",color = "black") +
-        geom_point()+
+        geom_point()+                      #scatter plot the coordinates
         theme_void() + coord_quickmap() +
         labs(title = "Event locations across Germany", caption = "Source: ticketmaster.com") +
         theme(title = element_text(size=8, face='bold'),
@@ -194,15 +231,24 @@ venue_data %>%
 ### Exercise 6: Event locations in other countries
 * *Repeat exercises 2 to 5 for another European country of your choice. (Netherlands)*
 
+The following code replicates the previous results for the Netherlands. The only
+changes made to the code are ``countryCode = "NL"`` in the call to the API,
+the coordinate limits for the Netherland map, and setting ``region = "Netherlands"``
+in ``map_data()``.
+
 ``` {r Excercise_6, warning=FALSE}
 source("api_key.R")
 
+#perform a GET request to the api, filtering for Germany and store the content:
 APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                   query = list(apikey = key,
                                countryCode = "NL")) %>%
               content()
 
+#obtain n as the number of observations: 
 n <- length(APIcontent$`_embedded`$venues)
+
+#create an empty datframe for n observations per variable:
 venue_data <- tibble(
   name  = character(n),
   city   = character(n),
@@ -211,10 +257,13 @@ venue_data <- tibble(
   url = character(n),
   longitude = character(n),
   latitude = character(n),
-)
-
+ )
+#extract the lists containing the venue information:
 venues <- APIcontent$`_embedded`$venues
 
+# loop over the lists to extract the respective variables for each observation and
+  #store them in the initialized dataframe "venue_data". Everytime a NULL object
+  #is returned due to missing variables, I pace "NA" into the dataframe.
 for (i in 1:n) {
   
   if (is.null(venues[[i]]$name)) {venue_data[i, 1] <- "NA"} 
@@ -238,10 +287,16 @@ for (i in 1:n) {
   if (is.null(venues[[i]]$location$latitude)) {venue_data[i, 7] <- "NA"} 
   else {venue_data[i, 7] <- venues[[i]]$location$latitude}
 }
+#look at the resulting dataframe:
+glimpse(venue_data)
 
+# obtain the number of pages (substract 1 as pointed out above)
 total_pages <- APIcontent$page$totalPages-1
+
+#obtain the number of observations available
 total_results <-APIcontent$page$totalElements
 
+#initialize a dataframe with  observations equal to "total_results"
 venue_data <- tibble(
   name  = character(total_results),
   city   = character(total_results),
@@ -252,18 +307,28 @@ venue_data <- tibble(
   latitude = character(total_results),
 )
 
+# loop over the lists to extract the respective variables for each observation and
+  #store them in the initialized dataframe "venue_data". Everytime a NULL object
+  #is returned due to missing variables, I pace "NA" into the dataframe.
+  #The index of the first page is 0 and the index of the last page is "total_pages":
+
 for (p in 0:total_pages) {
-  
+  #perform a GET request to the api, filtering for Germany and store the content:
   APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                     query = list(apikey = key,
                                  countryCode = "NL",
                                  page = p)) %>%
                 content()
   
+  #extract the lists containing the venue information:
   venues <- APIcontent$`_embedded`$venues
   
+  #store the number of observations of the list for the respective page:
   n <- length(APIcontent$`_embedded`$venues)
   
+  # loop over the lists to extract the respective variables for each observation and
+  #store them in the initialized dataframe "venue_data". Everytime a NULL object
+  #is returned due to missing variables, I pace "NA" into the dataframe:
   for (i in 1:n) {
     
     if (is.null(venues[[i]]$name)) {venue_data[(p)*20 + i,1] <- "NA"} 
@@ -291,23 +356,28 @@ for (p in 0:total_pages) {
   Sys.sleep(0.5)
 }
 
-venue_data$longitude <- as.numeric(venue_data$longitude)
+# convert the coordinates to numeric:
+venue_data$longitude <- as.numeric(venue_data$longitude) 
 venue_data$latitude <- as.numeric(venue_data$latitude)
 
+glimpse(venue_data)
+
+# only include coordinates, which are really within Netherland borders:
 venue_data$longitude[venue_data$longitude<3.358333 | venue_data$longitude > 7.227778] <- NA
 venue_data$latitude[venue_data$latitude< 50.750417 | venue_data$latitude > 53.555] <- NA
 
 
+# create a plot for the Netherlands
 venue_data %>% 
-  ggplot(aes(longitude,latitude)) +
-  geom_polygon(
-    aes(x = long, y = lat, group = group), data = map_data("world", region = "Netherlands"),
-    fill = "grey90",color = "black") +
-  geom_point()+
-  theme_void() + coord_quickmap() +
-  labs(title = "Event locations across the Netherlands", caption = "Source: ticketmaster.com") +
-  theme(title = element_text(size=8, face='bold'),
-        plot.caption = element_text(face = "italic"))
+      ggplot(aes(longitude,latitude)) +    #aesthetics for the coordinates
+        geom_polygon(                      #map in theshape of the Netherlands
+          aes(x = long, y = lat, group = group), data = map_data("world", region = "Netherlands"),
+        fill = "grey90",color = "black") +
+        geom_point()+                      #scatter plot the coordinates
+        theme_void() + coord_quickmap() +
+        labs(title = "Event locations across the Netherlands", caption = "Source: ticketmaster.com") +
+        theme(title = element_text(size=8, face='bold'),
+             plot.caption = element_text(face = "italic"))
 
 
 ```
