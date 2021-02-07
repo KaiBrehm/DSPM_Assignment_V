@@ -134,7 +134,7 @@ glimpse(venue_data)
 
 ``` {r Excercise_4, warning=FALSE}
 total_pages <- APIcontent$page$totalPages-1
-total_results <-APIcontent$page$totalElements-20
+total_results <-APIcontent$page$totalElements
 
 venue_data <- tibble(
   name  = character(total_results),
@@ -146,7 +146,7 @@ venue_data <- tibble(
   latitude = character(total_results),
 )
 
-for (p in 1:total_pages){
+for (p in 0:total_pages){
 
   APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                     query = list(apikey = key,
