@@ -78,22 +78,48 @@ venue_data <- tibble(
 venues <- APIcontent$`_embedded`$venues
 
 # loop over the lists to extract the respective variables for each venue
-for (i in 1:n){
-  venue_data[i,1] <- venues[[i]]$name
-  venue_data[i,2] <- venues[[i]]$city
-  venue_data[i,3] <- venues[[i]]$postalCode
-  venue_data[i,4] <- venues[[i]]$address
-  venue_data[i,5] <- venues[[i]]$url
-  if (is.null(venues[[i]]$location$longitude)){
-    venue_data[i,6] <-"NA"
-  } else {
-    venue_data[i,6] <- venues[[i]]$location$longitude
-  }
+for (i in 1:n) {
 
-  if (is.null(venues[[i]]$location$latitude)){
-    venue_data[i,7] <- "NA"
+  if (is.null(venues[[i]]$name)) {
+    venue_data[i, 1] <- "NA"
   } else {
-    venue_data[i,7] <- venues[[i]]$location$latitude
+    venue_data[i, 1] <- venues[[i]]$name
+  }
+  
+  if (is.null(venues[[i]]$city)) {
+    venue_data[i, 2] <- "NA"
+  } else {
+    venue_data[i, 2] <- venues[[i]]$city
+  }
+  
+  if (is.null(venues[[i]]$postalCode)) {
+    venue_data[i, 3] <- "NA"
+  } else {
+    venue_data[i, 3] <- venues[[i]]$postalCode
+  }
+ 
+  if (is.null(venues[[i]]$address)) {
+    venue_data[i, 4] <- "NA"
+  } else {
+    venue_data[i, 4] <- venues[[i]]$address
+  }
+  
+  if (is.null(venues[[i]]$url)) {
+    venue_data[i, 5] <- "NA"
+  } else {
+    venue_data[i, 5] <- venues[[i]]$url
+  }
+  
+  if (is.null(venues[[i]]$location$longitude)) {
+    venue_data[i, 6] <- "NA"
+  } else {
+    venue_data[i, 6] <- venues[[i]]$location$longitude
+  }
+  
+  if (is.null(venues[[i]]$location$latitude)) {
+    venue_data[i, 7] <- "NA"
+  } else {
+    venue_data[i, 7] <- venues[[i]]$location$latitude
   }
 }
 
@@ -189,9 +215,10 @@ glimpse(venue_data)
 ```
 
 ### Exercise 5: Visualizing the extracted data
-
+* *Produce a map of Germany with points indicating the event venues.*
 
 ``` {r Excercise_5, warning=FALSE}
+# only include coordinates, which are really within German borders:
 venue_data$longitude[venue_data$longitude<5.866944 | venue_data$longitude > 15.043611] <- NA
 venue_data$latitude[venue_data$latitude<47.271679 | venue_data$latitude > 55.0846] <- NA
 
