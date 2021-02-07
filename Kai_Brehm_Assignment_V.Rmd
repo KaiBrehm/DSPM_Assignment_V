@@ -50,9 +50,10 @@ source("api_key.R")
   *inspect the resulting list. Describe what you can see*
   
 ``` {r Excercise_3_1, warning=FALSE}
-APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues.json?", 
+APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                   query = list(apikey = key,
-                               countryCode = "DE" )) %>% content()
+                               countryCode = "DE")) %>%
+              content()
 ```
 The resulting list object contains the information for the german venues in the
 first object``_embedded``. There, each element of the list ``venues``, contains the 
@@ -79,50 +80,28 @@ venues <- APIcontent$`_embedded`$venues
 
 # loop over the lists to extract the respective variables for each venue
 for (i in 1:n) {
-
-  if (is.null(venues[[i]]$name)) {
-    venue_data[i, 1] <- "NA"
-  } else {
-    venue_data[i, 1] <- venues[[i]]$name
-  }
   
-  if (is.null(venues[[i]]$city)) {
-    venue_data[i, 2] <- "NA"
-  } else {
-    venue_data[i, 2] <- venues[[i]]$city
-  }
+  if (is.null(venues[[i]]$name)) {venue_data[i, 1] <- "NA"} 
+  else {venue_data[i, 1] <- venues[[i]]$name}
   
-  if (is.null(venues[[i]]$postalCode)) {
-    venue_data[i, 3] <- "NA"
-  } else {
-    venue_data[i, 3] <- venues[[i]]$postalCode
-  }
- 
-  if (is.null(venues[[i]]$address)) {
-    venue_data[i, 4] <- "NA"
-  } else {
-    venue_data[i, 4] <- venues[[i]]$address
-  }
+  if (is.null(venues[[i]]$city)) {venue_data[i, 2] <- "NA"} 
+  else {venue_data[i, 2] <- venues[[i]]$city}
   
-  if (is.null(venues[[i]]$url)) {
-    venue_data[i, 5] <- "NA"
-  } else {
-    venue_data[i, 5] <- venues[[i]]$url
-  }
+  if (is.null(venues[[i]]$postalCode)) {venue_data[i, 3] <- "NA"} 
+  else {venue_data[i, 3] <- venues[[i]]$postalCode}
   
-  if (is.null(venues[[i]]$location$longitude)) {
-    venue_data[i, 6] <- "NA"
-  } else {
-    venue_data[i, 6] <- venues[[i]]$location$longitude
-  }
+  if (is.null(venues[[i]]$address)) {venue_data[i, 4] <- "NA"} 
+  else {venue_data[i, 4] <- venues[[i]]$address}
   
-  if (is.null(venues[[i]]$location$latitude)) {
-    venue_data[i, 7] <- "NA"
-  } else {
-    venue_data[i, 7] <- venues[[i]]$location$latitude
-  }
+  if (is.null(venues[[i]]$url)) {venue_data[i, 5] <- "NA"} 
+  else {venue_data[i, 5] <- venues[[i]]$url}
+  
+  if (is.null(venues[[i]]$location$longitude)) {venue_data[i, 6] <- "NA"} 
+  else {venue_data[i, 6] <- venues[[i]]$location$longitude}
+  
+  if (is.null(venues[[i]]$location$latitude)) {venue_data[i, 7] <- "NA"} 
+  else {venue_data[i, 7] <- venues[[i]]$location$latitude}
 }
-
 glimpse(venue_data)
 ```
 
@@ -146,68 +125,44 @@ venue_data <- tibble(
   latitude = character(total_results),
 )
 
-for (p in 0:total_pages){
+for (p in 0:total_pages) {
 
   APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                     query = list(apikey = key,
-                               countryCode = "DE",
-                               page = p)) %>%
+                                 countryCode = "DE",
+                                 page = p)) %>%
                 content()
   
   venues <- APIcontent$`_embedded`$venues
-  
+
   n <- length(APIcontent$`_embedded`$venues)
   
-  for (i in 1:n){
+  for (i in 1:n) {
     
-    if (is.null(venues[[i]]$name)){
-      venue_data[(p)*20+i,1] <-"NA"
-    } else {
-      venue_data[(p)*20+i,1] <- venues[[i]]$name
-    }
+    if (is.null(venues[[i]]$name)) {venue_data[(p)*20 + i,1] <- "NA"} 
+    else {venue_data[(p)*20 + i,1] <- venues[[i]]$name}
     
+    if (is.null(venues[[i]]$city)) {venue_data[(p)*20 + i,2] <- "NA"} 
+    else {venue_data[(p)*20 + i,2] <- venues[[i]]$city}
     
-    if (is.null(venues[[i]]$city)){
-      venue_data[(p)*20+i,2] <-"NA"
-    } else {
-      venue_data[(p)*20+i,2] <- venues[[i]]$city
-    }
+    if (is.null(venues[[i]]$postalCode)) {venue_data[(p)*20 + i,3] <- "NA"} 
+    else {venue_data[(p)*20 + i,3] <- venues[[i]]$postalCode}
     
-    if (is.null(venues[[i]]$postalCode)){
-      venue_data[(p)*20+i,3] <-"NA"
-    } else {
-      venue_data[(p)*20+i,3] <- venues[[i]]$postalCode
-    }
+    if (is.null(venues[[i]]$address$line1)) {venue_data[(p)*20 + i,4] <- "NA"} 
+    else {venue_data[(p)*20 + i,4] <- venues[[i]]$address$line1}
     
-    if (is.null(venues[[i]]$address$line1)){
-      venue_data[(p)*20+i,4] <-"NA"
-    } else {
-      venue_data[(p)*20+i,4] <- venues[[i]]$address$line1
-    }
+    if (is.null(venues[[i]]$url)) {venue_data[(p)*20 + i,5] <- "NA"} 
+    else {venue_data[(p)*20 + i,5] <- venues[[i]]$url}
     
+    if (is.null(venues[[i]]$location$longitude)) {venue_data[(p)*20 + i,6] <- "NA"} 
+    else {venue_data[(p)*20 + i,6] <- venues[[i]]$location$longitude}
     
-    if (is.null(venues[[i]]$url)){
-      venue_data[(p)*20+i,5] <-"NA"
-    } else {
-      venue_data[(p)*20+i,5] <- venues[[i]]$url
-    }
-    
-    if (is.null(venues[[i]]$location$longitude)){
-      venue_data[(p)*20+i,6] <-"NA"
-    } else {
-      venue_data[(p)*20+i,6] <- venues[[i]]$location$longitude
-    }
-    
-    if (is.null(venues[[i]]$location$latitude)){
-      venue_data[(p)*20+i,7] <- "NA"
-    } else {
-      venue_data[(p)*20+i,7] <- venues[[i]]$location$latitude
-    }
+    if (is.null(venues[[i]]$location$latitude)) {venue_data[(p)*20 + i,7] <- "NA"} 
+    else {venue_data[(p)*20 + i,7] <- venues[[i]]$location$latitude}
   }
   
   Sys.sleep(0.5)
 }
-
 
 venue_data$longitude <- as.numeric(venue_data$longitude)
 venue_data$latitude <- as.numeric(venue_data$latitude)
