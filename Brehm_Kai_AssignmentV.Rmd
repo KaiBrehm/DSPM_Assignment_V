@@ -60,7 +60,8 @@ source("api_key.R")
 #perform a GET request to the api, filtering for Germany and store the content:
 APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                   query = list(apikey = key,
-                               countryCode = "DE")) %>%
+                               countryCode = "DE",
+                               locale = "*")) %>%
               content()
 ```
 
@@ -159,6 +160,7 @@ for (p in 0:total_pages) {
   APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                     query = list(apikey = key,
                                  countryCode = "DE",
+                                 locale = "*",
                                  page = p)) %>%
                 content()
   
@@ -242,7 +244,8 @@ source("api_key.R")
 #perform a GET request to the api, filtering for Germany and store the content:
 APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                   query = list(apikey = key,
-                               countryCode = "NL")) %>%
+                               countryCode = "NL",
+                               locale = "*")) %>%
               content()
 
 #obtain n as the number of observations: 
@@ -317,6 +320,7 @@ for (p in 0:total_pages) {
   APIcontent <- GET("https://app.ticketmaster.com/discovery/v2/venues", 
                     query = list(apikey = key,
                                  countryCode = "NL",
+                                 locale = "*",
                                  page = p)) %>%
                 content()
   
